@@ -86,7 +86,7 @@ The dataset was created through the following process:
 
 2. **Exact prompt to deep research**:
    ```
-"I want to create a dataset of obscure scientific facts of papers published in 2022 in various fields like physics, math, biology, computer science, etc. The facts should be stuff that are pretty specific (ideally numerical, and if not numerical, then a multiple choice question) and based either on empirical experiments or logical deduction (in the case of math). The way I want to achieve this is to get some top 100 scientific publications, and extract as many facts as you can find."
+I want to create a dataset of obscure scientific facts of papers published in 2022 in various fields like physics, math, biology, computer science, etc. The facts should be stuff that are pretty specific (ideally numerical, and if not numerical, then a multiple choice question) and based either on empirical experiments or logical deduction (in the case of math). The way I want to achieve this is to get some top 100 scientific publications, and extract as many facts as you can find.
    - Example facts:
      - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" what is the percentage of times the antialiased model changed its prediction? Answer: 15%
      - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" how did the authors measure image typicality?
