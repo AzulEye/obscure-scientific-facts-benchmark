@@ -86,14 +86,14 @@ The dataset was created through the following process:
 
 2. **Exact prompt to deep research**:
    ```
-I want to create a dataset of obscure scientific facts of papers published in 2022 in various fields like physics, math, biology, computer science, etc. The facts should be stuff that are pretty specific (ideally numerical, and if not numerical, then a multiple choice question) and based either on empirical experiments or logical deduction (in the case of math). The way I want to achieve this is to get some top 100 scientific publications, and extract as many facts as you can find.
-   - Example facts:
-     - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" what is the percentage of times the antialiased model changed its prediction? Answer: 15%
-     - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" how did the authors measure image typicality?
-       a. perceptual similarity of an image to the 10 nearest neighbors in the training set.
-       b. L2 distance in pixel space to the 10 nearest neighbors in the training set.
-       c. L2 distance in pixel space to the 5 nearest neighbors in the training set.
-       d. perceptual similarity of an image to the 5 nearest neighbors in the training set.
+   I want to create a dataset of obscure scientific facts of papers published in 2022 in various fields like physics, math, biology, computer science, etc. The facts should be stuff that are pretty specific (ideally numerical, and if not numerical, then a multiple choice question) and based either on empirical experiments or logical deduction (in the case of math). The way I want to achieve this is to get some top 100 scientific publications, and extract as many facts as you can find.
+      - Example facts:
+      - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" what is the percentage of times the antialiased model changed its prediction? Answer: 15%
+      - Question: In the paper "Why do deep convolutional networks generalize so poorly to small image transformations?" how did the authors measure image typicality?
+         a. perceptual similarity of an image to the 10 nearest neighbors in the training set.
+         b. L2 distance in pixel space to the 10 nearest neighbors in the training set.
+         c. L2 distance in pixel space to the 5 nearest neighbors in the training set.
+         d. perceptual similarity of an image to the 5 nearest neighbors in the training set.
    ```
 
 3. **Multiple-Choice Formatting**: Facts were transformed into multiple-choice questions with specific, often numerical answers.
