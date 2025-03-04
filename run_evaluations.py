@@ -16,10 +16,13 @@ from tqdm import tqdm
 openai.api_key = os.environ["OPENAI_API_KEY"]
 anthropic_client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
+# Initialize the instructor client for Anthropic (using tools mode)
+instructor_anthropic_client = instructor.from_anthropic(
+    anthropic_client, mode=instructor.Mode.ANTHROPIC_TOOLS
+)
 
 class ModelResponse(OpenAISchema):
     """Schema for structured model responses."""
-
     selected_option: str = Field(
         description="The letter (a/b/c/d) corresponding to the selected answer"
     )
@@ -30,19 +33,16 @@ class ModelResponse(OpenAISchema):
         description="Reasoning behind the answer selection", default=None
     )
 
-
 def load_dataset(file_path: str) -> pd.DataFrame:
     """Load and prepare the dataset."""
     df = pd.DataFrame()
     try:
         df = pd.read_csv(file_path)
-
         print(f"Successfully loaded {len(df)} questions from {file_path}")
         print(f"Columns: {df.columns.tolist()}")
     except Exception as e:
         print(f"Error loading dataset: {e}")
     return df
-
 
 def randomize_options(row: pd.Series) -> Tuple[List[str], Dict[str, str]]:
     """
@@ -55,25 +55,19 @@ def randomize_options(row: pd.Series) -> Tuple[List[str], Dict[str, str]]:
         ("c", row["Option C"]),
         ("d", row["Option D"]),
     ]
-
     # Shuffle the options
     random.shuffle(options)
-
     # Create a mapping from original to new positions
     option_mapping = {
         orig: new for new, (orig, _) in zip(["a", "b", "c", "d"], options)
     }
-
     # The correct answer is always 'a' in the original data
     correct_answer_new_position = option_mapping["a"]
-
     # Return shuffled options and the new position of the correct answer
     shuffled_options = [
         f"{letter}. {text}" for letter, (_, text) in zip(["a", "b", "c", "d"], options)
     ]
-
     return shuffled_options, {"correct_answer": correct_answer_new_position}
-
 
 def create_prompt(row: pd.Series, shuffled_options: List[str]) -> str:
     """Create a standardized prompt for each question."""
@@ -88,7 +82,6 @@ Possible answers:
 {shuffled_options[2]}
 {shuffled_options[3]}
 Please answer a/b/c/d."""
-
 
 async def query_model(prompt: str, model_name: str) -> Dict[str, Any]:
     """
@@ -112,48 +105,23 @@ async def query_model(prompt: str, model_name: str) -> Dict[str, Any]:
                 "model": model_name,
             }
         elif model_name.startswith("claude"):
-            # For Anthropic's Claude models
-            response = anthropic_client.messages.create(
+            # Use instructor for Anthropic models via the patched client
+            response = instructor_anthropic_client.chat.completions.create(
                 model=model_name,
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=1000,
                 temperature=0,
-                messages=[{"role": "user", "content": prompt}],
+                response_model=ModelResponse,
             )
-
-            # Parse Claude's response to extract the letter answer
-            raw_response = response.content[0].text
-
-            # Use simple regex or string matching to extract answer
-            selected_option = None
-            for line in raw_response.lower().split("\n"):
-                if any(
-                    x in line
-                    for x in ["answer: ", "answer is ", "i choose ", "option "]
-                ):
-                    for option in ["a", "b", "c", "d"]:
-                        if option in line:
-                            selected_option = option
-                            break
-                    if selected_option:
-                        break
-
-            # Fallback to first letter found if structured extraction fails
-            if not selected_option:
-                for char in raw_response.lower():
-                    if char in ["a", "b", "c", "d"]:
-                        selected_option = char
-                        break
-
             return {
-                "raw_response": raw_response,
-                "selected_option": selected_option,
+                "raw_response": response.model_dump_json(),
+                "selected_option": response.selected_option.lower(),
                 "model": model_name,
             }
         else:
             return {"error": f"Unsupported model: {model_name}", "model": model_name}
     except Exception as e:
         return {"error": str(e), "model": model_name}
-
 
 async def evaluate_models(
     df: pd.DataFrame, models: List[str], num_questions: Optional[int] = None
@@ -193,7 +161,6 @@ async def evaluate_models(
 
     return results
 
-
 def calculate_metrics(
     results: Dict[str, List[Dict[str, Any]]],
 ) -> Dict[str, Dict[str, float]]:
@@ -213,7 +180,6 @@ def calculate_metrics(
 
     return metrics
 
-
 def save_results(
     results: Dict[str, List[Dict[str, Any]]],
     metrics: Dict[str, Dict[str, float]],
@@ -231,10 +197,17 @@ def save_results(
 
     print(f"Results saved to {output_file}")
 
-
 async def main():
     # Models to evaluate
-    models = ["gpt-4o-mini", "gpt-4o", "gpt-4.5-preview"]
+    models = [
+        "claude-3-7-sonnet-20250219",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-20241022",
+        "claude-3-opus-20240229",
+        "gpt-4o-mini",
+        "gpt-4o",
+        "gpt-4.5-preview"
+    ]
 
     # Load dataset
     df = load_dataset("obscure_scientific_dataset.csv")
@@ -245,7 +218,7 @@ async def main():
 
     # Evaluate models
     # You can limit the number of questions for testing with the num_questions parameter
-    results = await evaluate_models(df, models)
+    results = await evaluate_models(df, models, num_questions=100)
 
     # Calculate metrics
     metrics = calculate_metrics(results)
@@ -260,8 +233,6 @@ async def main():
     # Save results
     save_results(results, metrics)
 
-
 if __name__ == "__main__":
     import asyncio
-
     asyncio.run(main())

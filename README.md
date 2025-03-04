@@ -9,8 +9,15 @@ On our dataset of 165 obscure scientific facts from 2022, models performed as fo
 | Model | Accuracy |
 |-------|----------|
 | gpt-4o-mini | 55% |
+| claude-3-5-haiku-20241022 | 63% |
 | gpt-4o | 69% |
+| claude-3-opus-20240229 | 71% |
+| claude-3-7-sonnet-20250219 | 85% |
+| claude-3-5-sonnet-20241022 | 86% |
 | gpt-4.5-preview | 94% |
+
+
+
 
 These results demonstrate a clear correlation between model scale and recall of obscure scientific facts, with gpt-4.5-preview showing remarkable capacity to retain detailed scientific information.
 
